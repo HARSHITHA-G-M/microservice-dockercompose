@@ -1,0 +1,39 @@
+version: "3.8"
+
+services:
+  postgres_db:
+    image: postgres:13
+    container_name: postgres_db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: mydatabase
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  flask_backend:
+    build: ./backend
+    container_name: flask_backend
+    depends_on:
+      - postgres_db
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@postgres_db:5432/mydatabase
+    ports:
+      - "5000:5000"
+    restart: always
+
+  react_frontend:
+    build: ./frontend
+    container_name: react_frontend
+    depends_on:
+      - flask_backend
+    ports:
+      - "3000:3000"
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+
+volumes:
+  postgres_data:
+
